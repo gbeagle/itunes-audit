@@ -30,21 +30,36 @@ YOUR_BASE_PATH_HERE = Path("basepath.txt").read_text().strip()
 
 # TODO refactor this to a helper class when it is not just duct tape.
 
+
+def get_total_album_tracks(file) -> int:
+        return MP4(file).tags['trkn'][0][1]
+
+def get_child_folders_list(folder) -> list:
+    return [child_folder for child_folder in folder.iterdir() if child_folder.is_dir()]
+
+def get_child_files_list(folder, file_extensions_list) -> list:
+         return [file for file in folder.iterdir() if file.suffix in file_extensions_list]
+
+
 def dfs_folder_traverse(folder):
-    child_folders = [child_folder for child_folder in folder.iterdir() if child_folder.is_dir()]
-    child_music_files = [file for file in folder.iterdir() if file.suffix in ['.mp3', '.m4a']]
+    child_folders = get_child_folders_list(folder)
+    child_music_files = get_child_files_list(folder, ['.mp3', '.m4a'])
 
     for f in child_folders:
-        print(f'down one level to {f.name}')
+        # print(f'down one level to {f.name}')
         dfs_folder_traverse(f)
     else:
         if child_music_files:
             num_files = len(child_music_files)
-            print(f"{num_files} files in {folder.name}...")
+            num_tracks = get_total_album_tracks(child_music_files[0])
 
-            for file in child_music_files:
-                m4a_metadata = MP4(file)
-                print(m4a_metadata.tags['sonm'])
+            if (num_files < num_tracks):
+                print(f"potentially missing {num_tracks - num_files} files in {folder.name}...")
+                # TODO (maybe) make up a list of edge case names? would have to be stored as straight text.
+
+            # for file in child_music_files:
+            #     m4a_metadata = MP4(file)
+            #     print(m4a_metadata.tags['trkn'], ' ', m4a_metadata.tags['sonm'])
 
         return
 
