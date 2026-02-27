@@ -17,6 +17,7 @@ The basics:
 # evaluate path.walk() as an alternative to the relatively naive DFS here
 
 from pathlib import Path
+from mutagen.mp4 import MP4
 
 YOUR_BASE_PATH_HERE = Path("basepath.txt").read_text().strip()
 # TODO: very quick and dirty anonymization. put in function later.
@@ -30,14 +31,21 @@ YOUR_BASE_PATH_HERE = Path("basepath.txt").read_text().strip()
 # TODO refactor this to a helper class when it is not just duct tape.
 
 def dfs_folder_traverse(folder):
-    child_folders = [f for f in folder.iterdir() if f.is_dir()]
+    child_folders = [child_folder for child_folder in folder.iterdir() if child_folder.is_dir()]
+    child_music_files = [file for file in folder.iterdir() if file.suffix in ['.mp3', '.m4a']]
 
     for f in child_folders:
         print(f'down one level to {f.name}')
         dfs_folder_traverse(f)
     else:
-        numfiles = len([file.name for file in folder.iterdir() if file.is_file()])
-        print(f"{numfiles} files in {folder.name} here...")
+        if child_music_files:
+            num_files = len(child_music_files)
+            print(f"{num_files} files in {folder.name}...")
+
+            for file in child_music_files:
+                m4a_metadata = MP4(file)
+                print(m4a_metadata.tags['sonm'])
+
         return
 
 
